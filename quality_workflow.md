@@ -99,91 +99,6 @@ Trying another model
 > raxmlHPC-PTHREADS -f a -T 24 -x 37644 -N 100 -n good_tree_raxml_wag -s seqCat_sequences.phylip -p 35 -m PROTGAMMAWAG
 
 
-## To get the identities of the orthogroups in each dataset:
-
-Working in this directory: /mnt/lustre/macmaneslab/jlh1023/phylo_qual/small_test
-> cut -f 1 bad/lengths.txt > bad_og_ids.txt
-> cut -f 1 good/lengths.txt > good_og_ids.txt
-> cut -f 1 trin/lengths.txt > trin_og_ids.txt
-
-> sort bad_og_ids.txt > sorted_bad_og_ids.txt
-> sort good_og_ids.txt > sorted_good_og_ids.txt
-> sort trin_og_ids.txt > sorted_trin_og_ids.txt
-
-### Comparing the bad dataset to the good:
-
-Pulling out OGs unique to the bad dataset:
-> comm -23 sorted_bad_og_ids.txt sorted_good_og_ids.txt > bad_uniq_good.txt
-> wc -l bad_uniq_good.txt
-
-There are 3028 OGs unique to the bad dataset when compared with the good.
-
-Pulling out OGs unique to the good dataset:
-> comm -13 sorted_bad_og_ids.txt sorted_good_og_ids.txt > good_uniq_bad.txt
-> wc -l good_uniq_bad.txt
-
-There are 3451 OGs unique to the good dataset when compared with the bad.
-
-Pulling out shared OGs:
-> comm -12 sorted_bad_og_ids.txt sorted_good_og_ids.txt > shared_bad_good.txt
-> wc -l shared_bad_good.txt
-
-There are 425 OGs shared between the good and bad datasets.
-
-### Comparing the bad dataset to the trin:
-
-Pulling out OGs unique to the bad dataset:
-> comm -23 sorted_bad_og_ids.txt sorted_trin_og_ids.txt > bad_uniq_trin.txt
-> wc -l bad_uniq_trin.txt
-
-There are 3137 OGs unique to the bad dataset when compared with the trin.
-
-Pulling out OGs unique to the trin dataset:
-> comm -13 sorted_bad_og_ids.txt sorted_trin_og_ids.txt > trin_uniq_bad.txt
-> wc -l trin_uniq_bad.txt
-
-There are 3459 OGs unique to the trin dataset when compared with the bad.
-
-Pulling out shared OGs:
-> comm -12 sorted_bad_og_ids.txt sorted_trin_og_ids.txt > shared_bad_trin.txt
-> wc -l shared_bad_trin.txt
-
-There are 316 OGs shared between the bad and trin datasets.
-
-### Comparing the good dataset to the trin:
-
-Pulling out OGs unique to the good dataset:
-> comm -23 sorted_good_og_ids.txt sorted_trin_og_ids.txt > good_uniq_trin.txt
-> wc -l good_uniq_trin.txt
-
-There are 3555 OGs unique to the good dataset when compared with the trin.
-
-Pulling out OGs unique to the trin dataset:
-> comm -13 sorted_good_og_ids.txt sorted_trin_og_ids.txt > trin_uniq_good.txt
-> wc -l trin_uniq_good.txt
-
-There are 3454 OGs unique to the trin dataset when compared with the good.
-
-Pulling out shared OGs:
-> comm -12 sorted_good_og_ids.txt sorted_trin_og_ids.txt > shared_good_trin.txt
-> wc -l shared_good_trin.txt
-
-There are 321 OGs shared between the good and trin datasets.
-
-
-So. This seems crazy. There is no way that there are actually that few shared between the different datasets. What is probably happening (I think) is that different transcripts are being pruned out at the PhyloTreePruner step, so a different mouse transcript makes it through to the final alignment. Then when I pull those out to compare, it doesn't match very often, even though some of them probably do. That's my theory, anyway.
-
-Not totally sure what to do about that. I could go back into the log files from the PTP wrapper script and find the transcripts that are getting pruned out, and check the ones that made it into the alignment with those also. I think that would take some time.
-
-*Update!*
-
-So, what actually happened is that I didn't think the whole situation through as carefully as I needed to. When I renamed the orthogroups according to the mouse transcripts, I wasn't doing it based on any universal system, I was doing it based on the transcripts that were created in each assembly. So the "good" one got named with the awesome transcripts and the "trin" one got named with all the transcript names from Trinity and so on. So it's sort of a miracle that any of them matched up at all.
-
-To get around this issue, there are a couple of options. The first option involves blasting the transcripts to the mouse reference, taking the top hit, blasting that back to the mouse assembly, and seeing if I get the original transcript. The second option involves running orthofinder on the mouse assemblies by themselves, so that all the transcripts from all of the assemblies get sorted into orthogroups, and then we would know which ones corresponded with which other ones. These may still need to happen at some point, but we're not going to worry about them for now.
-
-For now, I am going to put in the mouse reference and use that going into Orthofinder instead of the good, bad, and trinity assemblies. I will still use those different ones for all the other species, but will use the mouse as a sort of anchor. That way, when orthofinder puts transcripts into OGs for all the three different datasets, we will be able to tell which is which because the mouse will already be there, annotated and good to go. Then when PhyloTreePruner trims out everything but the one-to-one orthologs, the mouse transcript that is left will be the name given to the OG, and we'll be able to compare them a lot more easily. Woo!
-
-*Update over*
 
 
 Wanted to get some summary stats, so I ran the AMAS summary script on the bad dataset.
@@ -224,7 +139,7 @@ You have to remove the backslash from in front of the first underscore (just abo
 
 ## Final dataset
 
-This dataset contains these organisms (in these categories) for a total of 38:
+This dataset contains these organisms (in these categories) for a total of 39:
 
 Outgroup (jawless fish) (1):
 Lethenteron_camtschaticum
@@ -270,7 +185,7 @@ Anas_platyrhynchos
 Gallus_gallus
 Parus_major
 
-Mammals (8):
+Mammals (9):
 Felis_catus
 Dasypus_novemcinctus
 Balaenoptera_acutorostrata
@@ -279,6 +194,7 @@ Mus_musculus
 Notamacropus_eugenii
 Oryctolagus_cuniculus
 Rhinolophus_sinicus
+Homo_sapiens
 
 
 
@@ -357,7 +273,7 @@ This is for the bad dataset:
 it requires a tsv file from interproscan that contains a GO terms column, a file that is a list of all the specific mouse transcripts of interest (from whatever dataset I'm focused on at the moment), and the name of an output file.
 
 This is super great for getting a straight up list of the GO terms, but in reality, what I need to run topGO is much simpler than this. So I don't need to worry about the above script, and instead, I can use a quick cut command to get the columns that I need.
->cut -f 1, 14 > mouse_trans_goterms.tsv
+>cut -f 1,14 mus.tsv > mouse_trans_goterms.tsv
 
 Then I'll also need the list of mouse transcripts that I'm interested in, which I can easily get from the directories that get spit out by my script that weeds out the files with empty bits. This is how I did it for the bad dataset (from this directory: /mnt/lustre/macmaneslab/jlh1023/phylo_qual/final/bad/ptp_runs/):
 > ls bad39_complete_files/ > bad39_clean_transcripts.txt
@@ -534,6 +450,266 @@ Bad: 0.0526
 Good: 0.00832
 
 
+### New GO term analysis  
+
+We realized we needed to be using only the liver transcriptome of the mouse as the "background" to check for enrichment, instead of the entire mouse reference transcriptome. So I ran interproscan on the ORP mouse liver transcriptome that Troy assembled forever ago (when we thought we would be able to use it in the full analysis). This is after it's been translated into amino acids and the headers changed.
+
+Inside: /mnt/lustre/macmaneslab/jlh1023/phylo_qual/actual_final/mouse
+> interproscan -i Mus_musculus_liver.fa -b mus_liver_inter -goterms -f TSV  
+
+Honestly, now that I'm thinking about this, this might not be necessary. I need the names to match up between the background go terms and the ones I'm interested in, so I'll have to pull them from the original interproscan results anyway.
+
+But now the problem is that none of the gene names match the transcripts from the partitions, because they were all made with the mouse reference. So I made a blast database from the mouse reference:  
+> makeblastdb -in mus_ref.fa -out mus_ref -dbtype prot  
+
+And then I blasted all of the mouse liver transcripts against the mouse reference transcriptome to see where the transcripts (which have already been interproscanned) match up with the reference:  
+> blastp -db mus_ref -max_target_seqs 1 -query Mus_musculus_liver.fa -outfmt '6 qseqid qlen length pident gaps evalue stitle' -evalue 1e-10 -num_threads 6 -out mus_blast.out  
+
+So the columns in the output file are: sequence ID of the query, length of the query, length of the match (?), percent identity, number of gaps, e-value, and match name (which for me is the transcript name that matches literally everything else in my analysis). Example below.  
+
+> Mus_musculus_liver|1    813     813     100.000 0       0.0     Mus_musculus|3619
+> Mus_musculus_liver|2    354     354     100.000 0       0.0     Mus_musculus|12936
+> Mus_musculus_liver|2    354     159     38.994  10      2.08e-28        Mus_musculus|12936
+> Mus_musculus_liver|2    354     134     35.075  9       1.00e-16        Mus_musculus|12936  
+
+Ok great! Now I'll write a script that will pull out the things that are 97% identity matches or higher (all the e-values should be good to go), and then write another thing that will pull out the mouse reference transcripts that match the relevant mouse liver transcripts. Easy peasy.  
+
+This is in the same script, located here: /mnt/lustre/macmaneslab/jlh1023/pipeline_dev/pipeline_scripts/blast_similarity.py and I ran it like this from the same directory as above:  
+> /mnt/lustre/macmaneslab/jlh1023/pipeline_dev/pipeline_scripts/blast_similarity.py -i mus_blast.out -g mus_ref_inter.tsv -o mus_ref_liver_matches.tsv
+
+Ok, something is going wrong with this and I don't know what it is. Since it works perfectly in all my small tests (when I just head the file with 10 or 100 lines and run it with that), I'm just going to test it using increasingly large test sets, have them all run in different tmux windows, and see at what point they start being the weird incorrect output that I'm seeing when I run the whole thing. The tests are as follows:  
+mus_blast1.out = lines 1-5000 of mus_blast.out - this will go into an output file called mus_test_matches1.tsv  
+mus_blast2.out = lines 1-10000  
+mus_blast3.out = lines 1-15000  
+mus_blast4.out = lines 1-20000  
+mus_blast5.out = lines 1-25000  
+
+If these all come out normal, I'll know the issue is somewhere in the last 5000 lines (or so - the whole file is 30,356 lines long).  
+
+mus_test_matches1.tsv - normal  
+mus_test_matches2.tsv - normal
+mus_test_matches3.tsv - normal
+mus_test_matches4.tsv - normal
+mus_test_matches5.tsv - normal  
+
+Either there is nothing wrong, or the problem is in the very last section of the blast output file.  
+Doing one more test, this time with the last few lines of the file  
+> tail -n +25000 mus_blast.out > mus_blast6.out  #this file has 5357 lines, so I think I got what I was trying to.  
+
+mus_blast6.out (lines 25000-end) > mus_test_matches6.tsv - weird
+mus_blast7.out (lines 26000-end) > mus_test_matches7.tsv - weird
+mus_blast8.out (lines 27000-end) > mus_test_matches8.tsv - weird
+mus_blast9.out (lines 28000-end) > mus_test_matches9.tsv - normal
+mus_blast10.out (lines 29000-end) > mus_test_matches10.tsv -normal
+
+Ok, so it seems like the issue is somewhere between lines 27,000 and 28,000.  
+
+> head -n 1000 mus_blast8.out > mus_blast_spec.out
+
+mus_blast_spec.out - produces a weird output file  
+So now I'm going to narrow down this one.  
+
+> head -n 900 mus_blast_spec.out > mus_blast_spec9.out
+
+mus_blast_spec9.out (lines 27,000-27,900) > mus_test_matches_spec9 - weird
+mus_blast_spec8.out (lines 27,000-27,800) > mus_test_matches_spec8 - weird
+mus_blast_spec7.out (lines 27,000-27,700) > mus_test_matches_spec7 - weird
+mus_blast_spec6.out (lines 27,000-27,600) > mus_test_matches_spec6 - weird
+mus_blast_spec5.out (lines 27,000-27,500) > mus_test_matches_spec5 - weird
+mus_blast_spec4.out (lines 27,000-27,400) > mus_test_matches_spec4 - weird
+mus_blast_spec3.out (lines 27,000-27,300) > mus_test_matches_spec3 - normal
+mus_blast_spec2.out (lines 27,000-27,200) > mus_test_matches_spec2 - normal
+mus_blast_spec1.out (lines 27,000-27,100) > mus_test_matches_spec1 - normal
+
+Ok, so looks like the problem is somewhere between 27,300 and 27,400 in the mus_blast.out file.
+Testing it on those hundred:
+> tail -n 100 mus_blast_spec4.out > mus_blast_spec4.1.out
+> /mnt/lustre/macmaneslab/jlh1023/pipeline_dev/pipeline_scripts/blast_similarity.py -i mus_blast_spec4.1.out -g mus_ref_inter.tsv -o mus_test_matches_spec4.1.tsv    
+
+This one is also weirdly formatted, so I think that's the culprit.
+However, there is nothing that looks particularly weird in this section of the output. So there's that.
+
+Just to make sure, I'm going to subset out the last few thousand lines from the blast output and run them through as well. I expect them to be normal, since the issue should be right before these lines.
+> tail -n +27400 mus_blast.out > mus_test_end.out  
+> /mnt/lustre/macmaneslab/jlh1023/pipeline_dev/pipeline_scripts/blast_similarity.py -i mus_test_end.out -g mus_ref_inter.tsv -o mus_test_matches_end.tsv
+
+ It's weird formatting. Need to look at again when I'm less tired.
+
+
+
+ Trying again:
+ > head -n 27300 mus_blast.out > top_mus_blast.out
+ > /mnt/lustre/macmaneslab/jlh1023/pipeline_dev/pipeline_scripts/blast_similarity.py -i top_mus_blast.out -g mus_ref_inter.tsv -o top_test_matches.tsv  
+
+I expected this one to be totally normal, and it was, thank goodness.
+
+30356 lines - 27300 lines = 3056 lines  
+
+> tail -n 3056 mus_blast.out > bottom_mus_blast.out
+> /mnt/lustre/macmaneslab/jlh1023/pipeline_dev/pipeline_scripts/blast_similarity.py -i bottom_mus_blast.out -g mus_ref_inter.tsv -o bottom_test_matches.tsv  
+
+I expected this one to be weird formatting, and it was. Now trying to "rescue" the end of the file, thereby isolating the bad part.
+
+> tail -n 2956 mus_blast.out > bottom1_blast.out  #bottom1_test_matches.tsv is still weird. Trying another.
+> tail -n 2856 mus_blast.out > bottom2_blast.out  #bottom2_test_matches.tsv is still weird.
+> tail -n 2756 mus_blast.out > bottom3_blast.out  #bottom3_test_matches.tsv is weird.  
+> tail -n 2656 mus_blast.out > bottom_2656_blast.out #weird
+> tail -n 2556 mus_blast.out > bottom_2556_blast.out #weird  
+
+2456 = weird  
+2356 = normal!  
+
+So, if I do this: `head -n 100 bottom_2456_blast.out > problem_27900-28000_blast.out` it should be the actual part that is messed up.  
+And if I do this: `head -n 27900 mus_blast.out > top_27900_blast.out` it should be normal still.  
+
+Seems like success! The top part (top_27900_blast.out) works great, the bottom part (bottom_2356_blast.out) is normal, and the middle 100 lines (problem_27900-28000_blast.out) looks like garbage!
+
+
+I ran the blast command again to see if it had just been a strange thing that happened that one time, but it wasn't, and the results were the same as the first time. So instead of trying to fix it, I'm going to continue my testing, and find the line that is the problem, and throw it out so I can continue the rest of the analysis. I can start from the problem_27900-28000_blast.out file that I made above, as I know this is where the issue is. Going to be testing from inside this directory from now on: /mnt/lustre/macmaneslab/jlh1023/phylo_qual/actual_final/mouse/blast_testing, hence the change in some of the paths.
+
+> head -n 10 ../problem_27900-28000_blast.out > problem1-10_blast.out
+> /mnt/lustre/macmaneslab/jlh1023/pipeline_dev/pipeline_scripts/blast_similarity.py -i top10_blast.out -g ../mus_ref_inter.tsv -o problem1-10.tsv  #weird  
+
+> tail -n 90 ../problem_27900-28000_blast.out | head -n 10 > problem11-20_blast.out
+> /mnt/lustre/macmaneslab/jlh1023/pipeline_dev/pipeline_scripts/blast_similarity.py -i problem11-20_blast.out -g ../mus_ref_inter.tsv -o problem11-20.tsv #normal  
+
+> tail -n 80 ../problem_27900-28000_blast.out | head -n 10 > problem21-30_blast.out #weird  
+> tail -n 70 ../problem_27900-28000_blast.out | head -n 10 > problem31-40_blast.out #normal  
+> tail -n 60 ../problem_27900-28000_blast.out | head -n 10 > problem41-50_blast.out #weird  
+> tail -n 50 ../problem_27900-28000_blast.out | head -n 10 > problem51-60_blast.out #normal  
+> tail -n 40 ../problem_27900-28000_blast.out | head -n 10 > problem61-70_blast.out #normal  
+> tail -n 30 ../problem_27900-28000_blast.out | head -n 10 > problem71-80_blast.out #normal  
+> tail -n 20 ../problem_27900-28000_blast.out | head -n 10 > problem81-90_blast.out #weird    
+> tail -n 10 ../problem_27900-28000_blast.out > problem91-100_blast.out #normal  
+
+These are not the results I was expecting. I thought I would find one line that I could cut out, but it looks like there are multiple. I guess I have more testing to do than I thought. Thinking that brute force testing them might end up taking the least amount of time, even though it will give me loads of files. I'll try it with the first of these problem files first, and see if I can isolate it further. As usual, the tsv files that result will be named with the same prefix as the blast files.  
+
+The four problem sections are:  
+problem1-10_blast.out  
+problem21-30_blast.out  
+problem41-50_blast.out  
+problem81-90_blast.out  
+
+> head -n 1 problem1-10_blast.out > problem1_blast.out #empty  
+tail -n 9 problem1-10_blast.out | head -n 1 > problem2_blast.out #normal  
+tail -n 8 problem1-10_blast.out | head -n 1 > problem3_blast.out #normal  
+tail -n 7 problem1-10_blast.out | head -n 1 > problem4_blast.out #normal  
+tail -n 6 problem1-10_blast.out | head -n 1 > problem5_blast.out #weird  
+tail -n 5 problem1-10_blast.out | head -n 1 > problem6_blast.out #weird   
+tail -n 4 problem1-10_blast.out | head -n 1 > problem7_blast.out #normal  
+tail -n 3 problem1-10_blast.out | head -n 1 > problem8_blast.out #normal  
+tail -n 2 problem1-10_blast.out | head -n 1 > problem9_blast.out #normal  
+tail -n 1 problem1-10_blast.out > problem10_blast.out #normal  
+
+I've marked the ones that are strange in a file and I'll get rid of them all from (a copy of) the original file when I'm finished. So far, I can see absolutely nothing that separates them from any other line. Moving on to the next batch.  
+
+> head -n 1 problem21-30_blast.out > problem21_blast.out #weird  
+tail -n 9 problem21-30_blast.out | head -n 1 > problem22_blast.out #normal   
+tail -n 8 problem21-30_blast.out | head -n 1 > problem23_blast.out #normal  
+tail -n 7 problem21-30_blast.out | head -n 1 > problem24_blast.out #empty  
+tail -n 6 problem21-30_blast.out | head -n 1 > problem25_blast.out #weird  
+tail -n 5 problem21-30_blast.out | head -n 1 > problem26_blast.out #weird  
+tail -n 4 problem21-30_blast.out | head -n 1 > problem27_blast.out #weird  
+tail -n 3 problem21-30_blast.out | head -n 1 > problem28_blast.out #weird  
+tail -n 2 problem21-30_blast.out | head -n 1 > problem29_blast.out #weird  
+tail -n 1 problem21-30_blast.out > problem30_blast.out #normal  
+
+> head -n 1 problem41-50_blast.out > problem41_blast.out #normal  
+tail -n 9 problem41-50_blast.out | head -n 1 > problem42_blast.out #normal  
+tail -n 8 problem41-50_blast.out | head -n 1 > problem43_blast.out #normal  
+tail -n 7 problem41-50_blast.out | head -n 1 > problem44_blast.out #normal  
+tail -n 6 problem41-50_blast.out | head -n 1 > problem45_blast.out #normal  
+tail -n 5 problem41-50_blast.out | head -n 1 > problem46_blast.out #normal  
+tail -n 4 problem41-50_blast.out | head -n 1 > problem47_blast.out #empty  
+tail -n 3 problem41-50_blast.out | head -n 1 > problem48_blast.out #weird  
+tail -n 2 problem41-50_blast.out | head -n 1 > problem49_blast.out #normal  
+tail -n 1 problem41-50_blast.out > problem50_blast.out #normal  
+
+> head -n 1 problem81-90_blast.out > problem81_blast.out #normal  
+tail -n 9 problem81-90_blast.out | head -n 1 > problem82_blast.out #normal  
+tail -n 8 problem81-90_blast.out | head -n 1 > problem83_blast.out #weird  
+tail -n 7 problem81-90_blast.out | head -n 1 > problem84_blast.out #normal  
+tail -n 6 problem81-90_blast.out | head -n 1 > problem85_blast.out #normal  
+tail -n 5 problem81-90_blast.out | head -n 1 > problem86_blast.out #normal  
+tail -n 4 problem81-90_blast.out | head -n 1 > problem87_blast.out #normal  
+tail -n 3 problem81-90_blast.out | head -n 1 > problem88_blast.out #normal  
+tail -n 2 problem81-90_blast.out | head -n 1 > problem89_blast.out #normal  
+tail -n 1 problem81-90_blast.out > problem90_blast.out #normal  
+
+
+OK. Now I will make a copy of the blast output file, and delete the lines that I've identified as being the problems.  I'm going to download it and put it in a text editor just to make it easier and make me feel more confident.  
+
+# IT WORKED!!!  
+
+Thank God.
+
+
+
+
+Now I can do the analysis pretty much like I did before. I'll isolate the columns of this file that I need:  
+> cut -f 1,14 edited_mus_matches.tsv > liver_goterms.tsv  
+
+And download this file. Then I'll pop it into a text editor and change the pipes (the bane of my existence) to underscores.  
+
+I've downloaded four transcript files (these are just lists of transcript names) that are found here on premise:  
+- /mnt/lustre/macmaneslab/jlh1023/phylo_qual/actual_final/comparisons/unique_good.txt (unique_good_transcripts_1684.txt)  
+- /mnt/lustre/macmaneslab/jlh1023/phylo_qual/actual_final/comparisons/unique_bad.txt (unique_bad_transcripts_76.txt)  
+- /mnt/lustre/macmaneslab/jlh1023/phylo_qual/actual_final/comparisons/bad_sorted.txt (all_bad_transcripts_408.txt)  
+- /mnt/lustre/macmaneslab/jlh1023/phylo_qual/actual_final/comparisons/good_sorted.txt   (all_good_transcripts_2016.txt)
+
+They have been renamed (in parentheses), their pipes changed to underscores, and the "underscore rename" part of their names removed. I'll do the TopGo analysis on each of these four datasets.  
+
+#### Total Good  
+
+I'll paste in the top few lines of the results for this one, but after adjusting for multiple tests, none are significant (0.00023 became 0.46368).  
+
+GO.ID                                        Term Annotated Significant Expected classicFisher
+1  GO:0006355 regulation of transcription, DNA-templat...         8           2     0.66       0.00023
+2  GO:0015031                           protein transport         6           3     0.50       0.00253
+3  GO:0006614 SRP-dependent cotranslational protein ta...         1           1     0.08       0.00303
+4  GO:0006659     phosphatidylserine biosynthetic process         1           1     0.08       0.00303
+5  GO:0055114                 oxidation-reduction process         3           1     0.25       0.00907
+6  GO:0006886             intracellular protein transport         5           2     0.41       0.01107
+7  GO:0006412                                 translation         4           1     0.33       0.01207
+8  GO:0045454                      cell redox homeostasis         5           1     0.41       0.01507
+9  GO:0006396                              RNA processing         7           1     0.58       0.02104
+10 GO:0006351                transcription, DNA-templated        17           3     1.41       0.02257
+11 GO:0035556           intracellular signal transduction        21           1     1.74       0.06190
+12 GO:0006793                phosphorus metabolic process        11           1     0.91       1.00000
+
+#### Unique Good  
+
+Pasting in the top few lines again, but again, no significant results (0.00019 became 0.31996).  
+
+GO.ID                                        Term Annotated Significant Expected classicFisher
+1  GO:0006355 regulation of transcription, DNA-templat...         8           2     0.63       0.00019
+2  GO:0015031                           protein transport         6           3     0.48       0.00228
+3  GO:0006614 SRP-dependent cotranslational protein ta...         1           1     0.08       0.00278
+4  GO:0006659     phosphatidylserine biosynthetic process         1           1     0.08       0.00278
+5  GO:0006886             intracellular protein transport         5           2     0.40       0.01007
+6  GO:0006412                                 translation         4           1     0.32       0.01107
+7  GO:0045454                      cell redox homeostasis         5           1     0.40       0.01382
+8  GO:0006396                              RNA processing         7           1     0.56       0.01930
+9  GO:0006351                transcription, DNA-templated        17           3     1.35       0.02033
+10 GO:0035556           intracellular signal transduction        21           1     1.67       0.05688
+11 GO:0006793                phosphorus metabolic process        11           1     0.87       1.00000
+
+#### Total Bad  
+
+I'm just going to pop in the very top of this table. There are no significantly enriched or depleted GO terms once I controlled for multiple testing (0.00076 became 0.31008).  
+
+GO.ID                                        Term Annotated Significant Expected classicFisher
+1  GO:0055114                 oxidation-reduction process         3           1     0.01       0.00076
+2  GO:0008150                          biological_process       186           1     0.66       1.00000
+3  GO:0008152                           metabolic process        79           1     0.28       1.00000
+
+#### Unique Bad  
+
+For this one, there are no significant GO terms even by the original p values, let alone after correcting for multiple tests.  
+
+
+
+
 ### Better trees
 
 The trees I've been working with were made with models that didn't fit them super well, and I want to make some more robust ones using the same datasets. Working in this directory: /mnt/lustre/macmaneslab/jlh1023/phylo_qual/final/bad/trees/   (or good, or trin)
@@ -624,6 +800,8 @@ Going to try it in iqtree instead.
 
 >iqtree -s good39.phylip -m TIM2+I+G -g correct_tree39.phy -pre iqtree_constrained1 -nt AUTO
 
+
+
 ### Tree Consistency
 
 Worth knowing the tree consistency scores between the different datasets. First you have to make gene trees with all of the partitions:
@@ -655,11 +833,7 @@ Relative tree certainty for this tree: 0.264337
 Tree certainty including all conflicting bipartitions (TCA) for this tree: 9.260231
 Relative tree certainty including all conflicting bipartitions (TCA) for this tree: 0.257229
 
-For the trin: *not the latest version of these numbers*
-Tree certainty for this tree: 10.977451
-Relative tree certainty for this tree: 0.313641
-Tree certainty including all conflicting bipartitions (TCA) for this tree: 10.691546
-Relative tree certainty including all conflicting bipartitions (TCA) for this tree: 0.305473
+
 
 Or if we want the consistency using the correct tree, we use this command:
 >raxmlHPC-PTHREADS-SSE3 -f i -m PROTGAMMAWAG -t correct_tree_branches.tre -z all_gene_trees.tre -n tc_ic
@@ -674,57 +848,14 @@ Bad dataset:
 Tree certainty for this tree: 12.286685
 Relative tree certainty for this tree: 0.341297
 Tree certainty including all conflicting bipartitions (TCA) for this tree: 11.902500
-Relative tree certainty including all conflicting bipartitions (TCA) for this tree: 0.330625
-
-#### Tree consistency with shortest RF distance gene trees
-
-Next, I want to select those gene trees with the shortest RF distances (from below), and test their tree consistency. To do this, I have to get the tree distance matrix (there is one for each dataset) from R and select the top percentage of trees with the shortest distances. Then I need to find a way to pull out these gene trees from the original concatenated gene tree file. Since I don't know how to do this in R, I'm going to start in excel, and then move back onto premise so I can use python.
-
-distance matrix files are located here: /Users/jenniferlhill/Desktop/Analyses/quality/
-good_dist_matrix.csv and bad_dist_matrix.csv
-
-I'm going to start with the shortest 10%, but can adjust to different percentages if I need to.
-For the bad dataset, that means the shortest 41 (40.8) gene trees. For the good dataset, it's 202 (201.5).
-
-To pull these gene trees out, I wrote a script called pull_short_gene_trees.py with an example below.
->/mnt/lustre/macmaneslab/jlh1023/pipeline_dev/pipeline_scripts/pull_short_gene_trees.py
--t /mnt/lustre/macmaneslab/jlh1023/phylo_qual/actual_final/bad/trees/top_ten_percent.txt \
--d /mnt/lustre/macmaneslab/jlh1023/phylo_qual/actual_final/bad/trees/gene_trees \
--n /mnt/lustre/macmaneslab/jlh1023/phylo_qual/actual_final/bad/trees/short_gene_trees
-
-Then I can just cat them together, like I did for the first round of gene trees, and test the tree consistency.
-
-I'll use the same commands as above for tree consistency, doing it with and without the correct tree.
-
-With correct tree
-
-Good dataset:
-Tree certainty for this tree: 13.133104
-Relative tree certainty for this tree: 0.364808
-Tree certainty including all conflicting bipartitions (TCA) for this tree: 12.708873
-Relative tree certainty including all conflicting bipartitions (TCA) for this tree: 0.353024
-
-Bad dataset:
-Tree certainty for this tree: 8.017451
-Relative tree certainty for this tree: 0.222707
-Tree certainty including all conflicting bipartitions (TCA) for this tree: 7.782765
-Relative tree certainty including all conflicting bipartitions (TCA) for this tree: 0.216188
+Relative tree certainty including all conflicting bipartitions (TCA) for this tree: 0.330625  
 
 
-Without correct tree
+These commands also spit out a tree with all the ICAs for each node depicted on the nodes themselves. For the good and bad datasets (in their respective directories) these are the files that are named "RAxML_IC_Score_BranchLabels.tc_ic".  
 
-Good dataset:
-Tree certainty for this tree: 6.515403
-Relative tree certainty for this tree: 0.180983
-Tree certainty including all conflicting bipartitions (TCA) for this tree: 6.377945
-Relative tree certainty including all conflicting bipartitions (TCA) for this tree: 0.177165
+These are great because I can pop them into a janky tree viewing program (dendroscope) and make them into pretty comparative ICA figures by plotting the tree in a pretty way in figtree, and then manually putting all of the numbers on.  
 
-Bad dataset:
-Tree certainty for this tree: 3.147232
-Relative tree certainty for this tree: 0.087423
-Tree certainty including all conflicting bipartitions (TCA) for this tree: 3.035785
-Relative tree certainty including all conflicting bipartitions (TCA) for this tree: 0.084327
-
+If you record all the numbers for each dataset also, you can make other plots (density ones come to mind) and compare the data points in other ways in R.  
 
 ### Tree distances
 
@@ -732,25 +863,7 @@ I want to compare the good and bad trees to the correct tree in a number of diff
 
 First, I want to do this with all of the gene trees for both datasets. A script to do this is in the quality folder of Matthias and is called tree_dist_edits.R. I have made density plots of the distributions of all of these distances, and they are also in the quality folder.
 
-I also want to compare the orthofinder species trees to the correct tree, and I've done that in tree_dist_extended.R, which is in the same place.
-
-Comparing OF trees to correct tree:
-Good dataset:
-    symmetric difference: 18
-    branch score difference: 0.7919888
-    path difference: 37.9209705
-    quadratic path difference: 13.6807719
-    weighted RF distance: 5.269694
-
-Bad dataset:
-    symmetric difference: 20
-    branch score difference: 0.9238571
-    path difference: 44.2040722
-    quadratic path difference: 15.2308405
-    weighted RF distance: 6.122862
-
-*update*
-Apparently this is irrelevant, even though I only did it on the express wishes of an advisor. So there's that. I have it now in case he changes his mind.
+I looked specifically at RF distances (symmetric difference) using the script above, and then also weighted RF distances, using some code I added to that script. It's actually a much simpler process when you're just doing one of the calculations.
 
 ### Alignment lengths
 
@@ -769,23 +882,153 @@ Then the normal command again, as above:
 
 Then I open these in excel and combine them, adding in the dataset info, so that I can plot them with ggplot in R.
 
+
+### Alignment stats  
+
+I thought it could be interesting to see if there are easy quality things we can pull out about the alignments to figure out why the ones in the good dataset appear to be better than the ones in the bad dataset. I wrote a script called "alignment_stats.py" that pulls out the number of constant sites (thought it could be easily changed to some other side in the same file) in the info file from when the gene trees were made.
+
+You just give it an input directory path with a bunch of iqtree info files in it, and an output file, and you can get all the numbers of constant sites for all the partitions in the dataset.  
+
+Then I plotted these with ggplot2 in R to look at distributions and stuff.  
+
+#### More alignment stats
+
+Since the last analysis was not that informative (they were pretty similar distributions), I want to look at some other alignment stats as well.
+
+I pulled out all the iqtree log and info files for all the partitions common to both datasets using these scripts:  
+/mnt/lustre/macmaneslab/jlh1023/pipeline_dev/pipeline_scripts/get_log_files.py
+/mnt/lustre/macmaneslab/jlh1023/pipeline_dev/pipeline_scripts/get_info_files.py  
+
+I'm sort of working on a script that will pull all of these things out at once, but since I have them all separately, who knows if/when that will actually happen.  
+
+So we can look at 4 measures total.
+
+1.  Constants: percentage of constant sites in each alignment - alignment_stats.py  
+    All alignments have this, and it is recorded in the info file as a percentage that I can pull out directly.
+    /mnt/lustre/macmaneslab/jlh1023/phylo_qual/actual_final/comparisons/common_bad_constants.tsv
+    /mnt/lustre/macmaneslab/jlh1023/phylo_qual/actual_final/comparisons/common_good_constants.tsv
+
+2.  Parsimony: percentage of parsimony informative sites in each alignment - alignment_parsimony.py  
+    All alignments have this, and it is recorded in the info file as a number. The number of total sites is also recorded, so the script pulls out both of these numbers and calculates a percentage to report.  
+    /mnt/lustre/macmaneslab/jlh1023/phylo_qual/actual_final/comparisons/common_bad_parsimony.tsv
+    /mnt/lustre/macmaneslab/jlh1023/phylo_qual/actual_final/comparisons/common_good_parsimony.tsv
+
+3.  Composition: number of sequences that failed the composition chi2 test - alignment_composition.py  
+    All alignments should have this measure, as the log file reports this number for each one, even if the number is 0.   
+    /mnt/lustre/macmaneslab/jlh1023/phylo_qual/actual_final/comparisons/common_bad_composition.tsv
+    /mnt/lustre/macmaneslab/jlh1023/phylo_qual/actual_final/comparisons/common_good_composition.tsv  
+
+    I've updated this script so that it now extracts the number of sequences that fail the composition test even if that number is 0 (which it was struggling with before).  
+    In the file "all_common_composition.csv" I have also added in the lengths of each alignment and normalized the number of sequences that fail the composition test with the alignment length.
+
+4.  Ambiguity: number of sequences that contain more than 50% gaps or ambiguity - alignment_ambiguity.py  
+    Only some of the alignments have this measure also, as some will not have any sequences that contain that much ambiguity.  Those that have this measure I have pulled into a file like the others.  
+    Of the 332 partitions common to both datasets:
+    288 alignments in the bad dataset have sequences with more than 50% gaps/ambiguity  
+    171 alignments in the good dataset have sequences with more than 50% gaps/ambiguity  
+    /mnt/lustre/macmaneslab/jlh1023/phylo_qual/actual_final/comparisons/common_bad_ambiguity.tsv
+    /mnt/lustre/macmaneslab/jlh1023/phylo_qual/actual_final/comparisons/common_good_ambiguity.tsv  
+
+
+I have downloaded all of these tsv files and imported them into excel. I combined them and added dataset information and made density plots in R the same way I have for everything else. I also tested whether the distributions were significantly different from one another using a Wilcoxon rank sum test.  
+
+Dave pointed out that in measure 4, the rest of the sequences would just have 0 as their score, and it might make more sense to have the total number of alignments represented, with 0s entered for all the ones that don't have scores. So I've done this as well, and have further values looking at the difference between distributions when all of the alignments have scores.  
+
+1.  Constants:  p-value = 0.3727, *not* significantly different  
+2.  Parsimony:  p-value = 0.8851, *not* significantly different  
+3.  Composition:  p-value = 0.006031, significantly different
+4.  Ambiguity:  p-value < 2.2e-16, significantly different
+
+
+
+
+### Tree branch lengths of common partitions
+
+I edited another script to pull out information from the info files (makes sense), this time the branch lengths of the gene trees. Each info file gives the total length, and the internal length. It says that they are unrooted trees, but it uses the first organism in the alignment that you give it as the root when it is drawing the tree, so I wasn't sure how much the total measure might be influenced by that. I pulled out both measures, just to check them both out.  
+
+Script is here: /mnt/lustre/macmaneslab/jlh1023/pipeline_dev/pipeline_scripts/tree_length.py  
+Files are here: /mnt/lustre/macmaneslab/jlh1023/phylo_qual/actual_final/comparisons/common_good_treelength.tsv  
+                /mnt/lustre/macmaneslab/jlh1023/phylo_qual/actual_final/comparisons/common_bad_treelength.tsv  
+
+I popped them into R as usual and made density plots. Super the same distribution-wise.  
+Total tree length: p-value = 0.5037  
+Internal tree length: p-value = 0.9397
+
+
+### Investigating the unique partitions
+
+Are the 76 unique partitions in the bad dataset really unique? We are calling them unique because they have Mus names that do not match the Mus names in the high-quality dataset, but we don't really know what they are. From here /mnt/lustre/macmaneslab/jlh1023/phylo_qual/actual_final/comparisons/ I ran the following two scripts to run interproscan on the unique partitions in each dataset. Remember that interproscan is picky and doesn't like asterisks or dashes. Which is annoying when trying to figure out what aligned sequences are, but nevermind.  
+
+> interproscan -i fixed_good_mus_unique_no_dashes.fasta -b good_unique_inter -goterms -f TSV
+> interproscan -i fixed_bad_mus_unique_no_dashes.fasta -b bad_unique_inter -goterms -f TSV  
+
+Then I took these output files and started comparing them in various ways. I could pull out the go-terms, but those have a super annoying format, so before I mess with that, I pulled out the description column (column 6) which contains a short phrase describing the function of that particular sequence. When I sort and compare these lists of descriptions, I get the following results:  
+
+High-quality dataset unique partitions: total descriptions = 21117  
+                                        unique descriptions = 20311
+
+Low-quality dataset unique partitions: total descriptions = 964
+                                       unique descriptions = 158  
+
+Descriptions shared between the (supposedly unique) partitions = 806  
+
+I'm not really sure if any of this is a valid comparison, but it certainly seems suggestive.
+
+
+#### Investigating the unique partitions using the same alignment stats as above  
+
+Pulled out the log and info files for the unique partitions for both datasets the same way I pulled out the common ones.  
+> /mnt/lustre/macmaneslab/jlh1023/pipeline_dev/pipeline_scripts/get_log_files.py -l unique_bad.txt -a all_bad_log_files/ -n unique_bad_log_files
+> /mnt/lustre/macmaneslab/jlh1023/pipeline_dev/pipeline_scripts/get_info_files.py -l unique_bad.txt -a all_bad_info_files/ -n unique_bad_info_files  
+
+And now I can use the same scripts I used above to pull out the four alignment metrics for these as well.
+
+1.  Constants: percentage of constant sites in each alignment - alignment_stats.py  
+    All alignments have this, and it is recorded in the info file as a percentage that I can pull out directly.
+    /mnt/lustre/macmaneslab/jlh1023/phylo_qual/actual_final/comparisons/unique_bad_constants.tsv
+    /mnt/lustre/macmaneslab/jlh1023/phylo_qual/actual_final/comparisons/unique_good_constants.tsv
+
+2.  Parsimony: percentage of parsimony informative sites in each alignment - alignment_parsimony.py  
+    All alignments have this, and it is recorded in the info file as a number. The number of total sites is also recorded, so the script pulls out both of these numbers and calculates a percentage to report.  
+    /mnt/lustre/macmaneslab/jlh1023/phylo_qual/actual_final/comparisons/unique_bad_parsimony.tsv
+    /mnt/lustre/macmaneslab/jlh1023/phylo_qual/actual_final/comparisons/unique_good_parsimony.tsv
+
+3.  Composition: number of sequences that failed the composition chi2 test - alignment_composition.py  
+    All alignments should have this measure, as the log file reports this number for each one, even if the number is 0.   
+    /mnt/lustre/macmaneslab/jlh1023/phylo_qual/actual_final/comparisons/unique_bad_composition.tsv
+    /mnt/lustre/macmaneslab/jlh1023/phylo_qual/actual_final/comparisons/unique_good_composition.tsv  
+
+4.  Ambiguity: number of sequences that contain more than 50% gaps or ambiguity - alignment_ambiguity.py  
+    Only some of the alignments have this measure also, as some will not have any sequences that contain that much ambiguity.  Those that have this measure I have pulled into a file like the others.  
+    Of the 76 partitions unique to the bad dataset:  
+    64 alignments in the bad dataset have sequences with more than 50% gaps/ambiguity  
+    of the 1684 partitions unique to the good dataset:  
+    1297 alignments in the good dataset have sequences with more than 50% gaps/ambiguity  
+    /mnt/lustre/macmaneslab/jlh1023/phylo_qual/actual_final/comparisons/unique_bad_ambiguity.tsv
+    /mnt/lustre/macmaneslab/jlh1023/phylo_qual/actual_final/comparisons/unique_good_ambiguity.tsv  
+
+
 ### Occupancy analysis
 
 I want to know if the numbers of orthogroups that contain all species are driven by one species or a handful of species, or if it's more spread across the dataset. I'm writing a script called "taxa_drivers.py" which will help to count these and figure this out.
 
-The script works! I tested it on the bad39 dataset to make sure it would count correctly. All of the taxa in that dataset should have 406 partitions that they are present in, because they are all required to be in all the partitions, but when I use it on the bad38 dataset, things are a bit weird. Takifugu only has 241 in the count, which is a bit crazy. Like, I think it might be impossible. There's another (Callorhinchus) that only has 608, but this is still way more than the number when all taxa are required, so that checks out without much suspicion. But I'm going to have to take a look at the rest of the process if I'm going to figure out where the other 150ish OGs are for this species. Weird.
+I finally got a chance to run the script I wrote:  
+> /mnt/lustre/macmaneslab/jlh1023/pipeline_dev/pipeline_scripts/taxa_drivers.py -a passing_files36/ -o good36_counts.txt
 
+Had to alter the ptp scripts a little bit to make the setup correct. An example is here:  
+> /mnt/lustre/macmaneslab/jlh1023/phylo_qual/actual_final/good/ptp_runs/ptp36.sh  
+
+I ran this with missing taxa from 1-4, and all of the count files have the same style name as the example above.  
 
 
 # Results
 
-- size of dataset (orthogroups and later partitions) is greater with good and trinity datasets
-- tree consistency is higher in the good and trinity datasets
-- with STAG, good tree is a bit better than bad and trin trees
-- alignment lengths both pre and post gblocks are really similar across datasets
-- patristic distances
-- partition finder
+- size of dataset (orthogroups and later partitions) is greater with good dataset
+- tree consistency is higher in the good dataset
+- with STAG, good tree is a bit better than bad tree
+- alignment lengths both pre gblocks is longer in the good dataset, but the same post-gblocks
 - GO biases
+- RF distances (weighted and not) are shorter (closer to the constraint tree) in the good vs. bad dataset
 
 ## Figures
 
@@ -804,3 +1047,36 @@ Running things from /mnt/lustre/macmaneslab/jlh1023/phylo_qual/actual_final/good
 -n half_species_alns
 
 Now I have the alignment files for the good dataset (I can just do the same thing for the bad), but I need to know which species are actually in these alignments.
+
+### Getting TCA/ICA scores for common gene trees
+
+I want to examine the partitions that are common to both the good and bad datasets. I've written tons of scripts that pull various interesting files out of directories into new collections, and this one is called "pull_certain_gene_trees.py".
+
+To run it, I'll need a list of partition names that correspond to the names of the gene trees I'm after. Then just a path to the directory containing the gene trees to pull from, and a new directory to house the gene trees I end up pulling using the script.
+
+I already have a list of the partition names that are common to both datasets (/mnt/lustre/macmaneslab/jlh1023/phylo_qual/actual_final/comparisons/common_to_both.txt) so I can use that for the first argument.    
+
+I'll have to run this for the good and bad datasets, because even though they are the same partitions by identity, they do not contain identical sequences (that's the whole point - some of them were assembled much better than others).  
+
+Now I'll head into the good dataset tree directory (/mnt/lustre/macmaneslab/jlh1023/phylo_qual/actual_final/good/trees) and I can run the script like this:  
+
+> /mnt/lustre/macmaneslab/jlh1023/pipeline_dev/pipeline_scripts/pull_certain_gene_trees.py -t /mnt/lustre/macmaneslab/jlh1023/phylo_qual/actual_final/comparisons/common_to_both.txt -d /mnt/lustre/macmaneslab/jlh1023/phylo_qual/actual_final/good/trees/gene_trees/ -n /mnt/lustre/macmaneslab/jlh1023/phylo_qual/actual_final/good/trees/good_common_gene_trees/
+
+Then I can cat them all together (into a file called all_good_common_gene_trees.tre) and run the raxml command on them:  
+>raxmlHPC-PTHREADS-SSE3 -f i -m PROTGAMMAWAG -t correct_tree_branches.tre -z all_good_common_gene_trees.tre -n common_trees  
+
+All of the files that are the result of these runs in their respective directories should have "common_trees" at the end of them.  
+
+Overall scores:  
+
+Good dataset common partition trees:  
+Tree certainty for this tree: 13.614095
+Relative tree certainty for this tree: 0.378169
+Tree certainty including all conflicting bipartitions (TCA) for this tree: 13.479639
+Relative tree certainty including all conflicting bipartitions (TCA) for this tree: 0.374434  
+
+Bad dataset common partition trees:  
+Tree certainty for this tree: 12.513293
+Relative tree certainty for this tree: 0.347591
+Tree certainty including all conflicting bipartitions (TCA) for this tree: 12.188808
+Relative tree certainty including all conflicting bipartitions (TCA) for this tree: 0.338578
