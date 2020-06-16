@@ -1,0 +1,3 @@
+# an example of the command we use to take the space out of headers. 
+
+sed 's_ __' > genus_species_1.fastq
