@@ -4,6 +4,8 @@ import argparse
 import os
 import re
 
+# a function to find and extract measures of alignment length, parsimony informative sites, and constant sites from a collection of iqtree info files 
+
 def iqtree_info_stats():
     try:
         length = ""
