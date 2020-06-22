@@ -81,7 +81,7 @@ parallel -j14 'cut -f1 -d"_" {} > {.}_rename' ::: \
 
 #concatenate all OGs into single nexus
 
-/mnt/lustre/macmaneslab/jlh1023/pipeline_dev/pipeline_scripts/seq_cat.pl \
+/mnt/lustre/macmaneslab/jlh1023/pipeline_dev/pipeline_scripts/seqCat.pl \
 -d/mnt/lustre/macmaneslab/jlh1023/phylo_qual/actual_final/good/ptp_runs/passing_files39.txt
 
 #rename nexus into something informative
