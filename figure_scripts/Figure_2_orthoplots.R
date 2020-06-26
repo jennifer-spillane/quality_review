@@ -12,18 +12,10 @@
 #scatterplots with density plots of number of transcripts, transrate, and busco scores above them
 ########################################################################
 
-#install.packages("gridExtra")
-library(ggplot2)
-library(gridExtra)
-library(plyr)
 
-#if(!require(devtools)) install.packages("devtools")
-#devtools::install_github("kassambara/ggpubr")
+library(ggplot2)
 
 library(ggpubr)
-
-par(mfrow = c(1, 1))
-grid.newpage()
 
 #read in the data - and don't be fooled by the name, it also contains transrate scores and numbers of transcripts
 all_scores <- read.csv("all_busco_ortho.csv")
