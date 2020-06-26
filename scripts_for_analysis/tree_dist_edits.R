@@ -1,5 +1,5 @@
 #some tree distance calculations from individual gene trees to a constraint tree.
-#Last modified 4-24-20 
+#Last modified 5-24-20 
 
 
 #load libraries
@@ -86,3 +86,5 @@ ggplot(common_dist, aes(x=dist, fill=dataset)) + geom_density(alpha=.3)
 wilcox.test(dist ~ dataset, data=common_dist) 
 #W = 60489, p-value = 0.02948
 #the distributions are significantly different 
+
+
