@@ -1079,4 +1079,42 @@ Bad dataset common partition trees:
 Tree certainty for this tree: 12.513293
 Relative tree certainty for this tree: 0.347591
 Tree certainty including all conflicting bipartitions (TCA) for this tree: 12.188808
-Relative tree certainty including all conflicting bipartitions (TCA) for this tree: 0.338578
+Relative tree certainty including all conflicting bipartitions (TCA) for this tree: 0.338578  
+
+
+## Reviewer stuff  
+
+We submitted to BMC Evolutionary Biology and got some comments back from reviewers. What follows is a workflow for any additional things we did in response to those comments.  
+
+### Astral  
+
+Docs: https://github.com/smirarab/ASTRAL  
+Version: 5.7.4  
+Ref: Zhang, Chao, Maryam Rabiee, Erfan Sayyari, and Siavash Mirarab. 2018. “ASTRAL-III: Polynomial Time Species Tree Reconstruction from Partially Resolved Gene Trees.” BMC Bioinformatics 19 (S6): 153. doi:10.1186/s12859-018-2129-y.  
+
+One reviewer wanted us to try it in a coalescent framework also (it's pretty clear that's what he prefers), so we used the gene trees I had already generated to run Astral to get a species tree. Just to be thorough, I did it on the whole datasets, the unique part of the datasets, and the common part of the datasets (so a total of six times).  
+
+I just downloaded the zip folder for Astral, unzipped it, and it's ready to go. This is an example for the good dataset common partition gene trees. (I'm running this from /mnt/lustre/macmaneslab/jlh1023/phylo_qual/actual_final/good/trees, in a script called astral_common_good.sh)  
+> java -jar /mnt/lustre/macmaneslab/jlh1023/Astral/astral.5.7.4.jar -i all_good_common_gene_trees.tre -o common_good_astral.tre  
+
+The first part is just calling up Astral from it's home in my directory, then an input file that is just all the relevant gene trees catted together, and an output file name.  
+
+#### Results from Astral  
+
+Astral gives you a couple of things. One is a tree file (the output file) that is the species tree (and the reason that most folks are using Astral to get), which I now have for each run that I did.  
+    /mnt/lustre/macmaneslab/jlh1023/phylo_qual/actual_final/good/trees/all_good_astral.tre  
+    /mnt/lustre/macmaneslab/jlh1023/phylo_qual/actual_final/good/trees/common_good_astral.tre  
+    /mnt/lustre/macmaneslab/jlh1023/phylo_qual/actual_final/good/trees/unique_good_astral.tre  
+    /mnt/lustre/macmaneslab/jlh1023/phylo_qual/actual_final/bad/trees/all_bad_astral.tre  
+    /mnt/lustre/macmaneslab/jlh1023/phylo_qual/actual_final/bad/trees/common_bad_astral.tre  
+    /mnt/lustre/macmaneslab/jlh1023/phylo_qual/actual_final/bad/trees/unique_bad_astral.tre  
+
+These are all pretty similar to one another.  
+
+It also gives you a score "The normalized quartet score (proportion of input gene tree quartet trees satisfied by the species tree). This is a number between zero and one; the higher this number, the less discordant your gene trees are." (quote from the tutorial https://github.com/smirarab/ASTRAL/blob/master/astral-tutorial.md#interpreting-output) Since I ran all my Astral runs as slurm scripts, it automatically captured the log files, which have names that correspond to the slurm script names, which I've listed below along with the number.  
+    astral_all_good.log: 0.7353501882952059  
+    astral_common_good.log: 0.7521107517936941  
+    astral_unique_good.log: 0.7320438858106557  
+    astral_all_bad.log: 0.7189732301961405  
+    astral_common_bad.log: 0.7345072378363438  
+    astral_unique_bad.log: 0.6512813154087392  
