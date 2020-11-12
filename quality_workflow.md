@@ -882,6 +882,15 @@ Then the normal command again, as above:
 
 Then I open these in excel and combine them, adding in the dataset info, so that I can plot them with ggplot in R.
 
+*update*  
+I also calculated the overall average alignment length for both datasets pre- and post-gblocks.  
+Pre-Gblocks:
+    good: 894.2764004  
+    bad: 846.7683215  
+Post-Gblocks:
+    good: 485.640377  
+    bad: 493.997549  
+    
 
 ### Alignment stats  
 
