@@ -71,3 +71,6 @@
 4. Get gene tree stats from iqtree files  
  - For getting measures of composition test failure and ambiguity (and alignment length) from log files: iqtree_log_stats.py   
  - For getting measures of comstant sites and parsimony-informative sites (and alighment length) from info files: iqtree_info_stats.py  
+
+5. Get species trees and stats from ASTRAL
+ - For building the species tree and capturing the output information in a log file: astral_common_good.sh
